@@ -57,7 +57,7 @@ class SudokuGrid:
             globalCol = indexN // 3
             subgridCol = indexN - 3 * (globalCol)
 
-            return (globalRow,globalCol,subgridRow,subgridCol)
+            return (globalRow, globalCol, subgridRow, subgridCol)
     
     def getValue(self, coords):
         indices = self.getIndices(coords)
@@ -76,18 +76,26 @@ class SudokuGrid:
                 self.grid[globalRow][globalCol][subgridRow][subgridCol] = value
 
     def isFillerValid(self, coords, value):
-        pass
+        indices = self.getIndices(coords)
+        if indices != None:
+            globalRow, globalCol, subgridRow, subgridCol = indices
+
+            fillerRow = sum([self.grid[globalRow][i][subgridRow] for i in range(3)], [])
+            fillerCol = [self.grid[i][globalCol][j][subgridCol] for i in range(3) for j in range(3)]
+            fillerSubgrid = sum(self.grid[globalRow][globalCol], [])
+
+            print(fillerRow)
+            print(fillerCol)
+            print(fillerSubgrid)
+            
+            if (value in fillerRow) or (value in fillerCol) or (value in fillerSubgrid):
+                return False
+            else:
+                return True
 
 
 newGame = SudokuGrid()
 # newGame.setValue("F4", "9")
 # newGame.setValue("F8", "4")
 # newGame.setValue("G5", "3")
-# newGame.setValue("A2", "2")
-newGame.setValue("G2", "4")
-# newGame.setValue("A1", "7")
-# newGame.setValue("I9", "4")
-# newGame.setValue("H8", "1")
-# newGame.setValue("C4", "2")
-print(newGame.grid)
 print(newGame)
