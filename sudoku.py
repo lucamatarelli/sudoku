@@ -38,7 +38,7 @@ class SudokuGrid:
         gridDisplay = gridDisplay.replace("[","").replace("]","").replace(",","").replace("'","")
         return gridDisplay
 
-    def getValue(self, coords):
+    def getIndices(self, coords):
         coords = list(coords)
         if len(coords) != 2:
             print("Erreur : seulement 2 coordonnées à entrer")
@@ -57,33 +57,25 @@ class SudokuGrid:
             globalCol = indexN // 3
             subgridCol = indexN - 3 * (globalCol)
 
+            return (globalRow,globalCol,subgridRow,subgridCol)
+    
+    def getValue(self, coords):
+        indices = self.getIndices(coords)
+        if indices != None:
+            globalRow, globalCol, subgridRow, subgridCol = indices
             return self.grid[globalRow][globalCol][subgridRow][subgridCol]
 
     def setValue(self, coords, value):
-        coords = list(coords)
-        if len(coords) != 2:
-            print("Erreur : seulement 2 coordonnées à entrer")
-            return
-        elif (coords[0] not in self.m) or (coords[1] not in self.n):
-            print("Erreur : format des coordonnées non valide")
-            return
-        elif value not in self.n:
+        if value not in self.n:
             print("Erreur : la valeur à insérer doit être un entier compris entre 1 et 9")
             return
         else:
-            # Accès type à une case : SudokuGrid.grid[rangée globale][colonne globale][rangée dans sous-grille][colonne dans sous-grille]
-            # coords[0] conditionne globalRow + subgridRow
-            indexM = self.m.index(coords[0])
-            globalRow = indexM // 3
-            subgridRow = indexM - 3 * (globalRow)
-            # coords[1] conditionne globalCol + subgridCol
-            indexN = self.n.index(coords[1])
-            globalCol = indexN // 3
-            subgridCol = indexN - 3 * (globalCol)
+            indices = self.getIndices(coords)
+            if indices != None:
+                globalRow, globalCol, subgridRow, subgridCol = indices
+                self.grid[globalRow][globalCol][subgridRow][subgridCol] = value
 
-            self.grid[globalRow][globalCol][subgridRow][subgridCol] = value
-
-    def isFillingValid(self):
+    def isFillerValid(self, coords, value):
         pass
 
 
@@ -92,7 +84,7 @@ newGame = SudokuGrid()
 # newGame.setValue("F8", "4")
 # newGame.setValue("G5", "3")
 # newGame.setValue("A2", "2")
-# newGame.setValue("H7", "5")
+newGame.setValue("G2", "4")
 # newGame.setValue("A1", "7")
 # newGame.setValue("I9", "4")
 # newGame.setValue("H8", "1")
