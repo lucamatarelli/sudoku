@@ -1,8 +1,8 @@
 import random as rd
 
 class SudokuGrid:
-    m = ["A","B","C","D","E","F","G","H","I"]
-    n = ["1","2","3","4","5","6","7","8","9"]
+    m = ("A","B","C","D","E","F","G","H","I")
+    n = ("1","2","3","4","5","6","7","8","9")
 
     def __init__(self):
         # Structure de la grille : [[[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
@@ -10,10 +10,11 @@ class SudokuGrid:
         #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]]]
         # Traduction de la structure d'une grille par imbrication de listes en compréhension (NB : dimensions non sujettes à variation) :
         self.grid = [[[[" " for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
+        self.initFillersCoords = ()
         
         # PROCESSUS DE GÉNÉRATION ALÉATOIRE
         # Randomisation de la quantité (bornée) de valeurs à insérer initialement dans la grille :
-        fillersAmount = rd.randint(10,20)
+        fillersAmount = 25#rd.randint(20,25)
         for _ in range(fillersAmount):
             # Randomisation du jeu de coordonnées pour chacune des valeurs à préinsérer :
             fillerCoords = rd.choice(self.m) + rd.choice(self.n)
@@ -29,6 +30,7 @@ class SudokuGrid:
                     fillerCoords = rd.choice(self.m) + rd.choice(self.n)
                 fillerValue = rd.choice(self.n)
             self.setValue(fillerCoords, fillerValue)
+            self.initFillersCoords += (fillerCoords,)
         print(f"\n({fillersAmount} valeurs préremplies)")
 
     def __str__(self):
@@ -79,8 +81,12 @@ class SudokuGrid:
         else:
             indices = self.getIndices(coords)
             if indices != None:
-                globalRow, globalCol, subgridRow, subgridCol = indices
-                self.grid[globalRow][globalCol][subgridRow][subgridCol] = value
+                if coords in self.initFillersCoords:
+                    print("Erreur : vous ne pouvez pas modifier les valeurs initiales")
+                    return
+                else:
+                    globalRow, globalCol, subgridRow, subgridCol = indices
+                    self.grid[globalRow][globalCol][subgridRow][subgridCol] = value
 
     def isFillerValid(self, coords, value):
         indices = self.getIndices(coords)
@@ -97,5 +103,18 @@ class SudokuGrid:
                 return True
 
 
-newGame = SudokuGrid()
-print(newGame)
+game = SudokuGrid()
+playerAction = ""
+
+while playerAction != "3":
+    print(game)
+    print("Actions :\n1) Insérer/Remplacer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n")
+    playerAction = input("Entrez le numéro de l'action à effectuer : ")
+    if playerAction == "1":
+        playerCoords = input("À quel emplacement souhaitez-vous insérer un chiffre ? ")
+        playerValue = input("Quel chiffre souhaitez-vous insérer ? ")
+        game.setValue(playerCoords, playerValue)
+    if playerAction == "2":
+        resetConfirmation = input("Votre progression sera perdue. Entrez \"reset\" pour confirmer : ")
+        if resetConfirmation == "reset":    
+            game = SudokuGrid()
