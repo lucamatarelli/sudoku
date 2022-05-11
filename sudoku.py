@@ -16,18 +16,18 @@ class SudokuGrid:
         fillersAmount = rd.randint(10,20)
         for _ in range(fillersAmount):
             # Randomisation du jeu de coordonnées pour chacune des valeurs à préinsérer :
-            fillerCoords = self.m[rd.randint(0,8)] + self.n[rd.randint(0,8)]
+            fillerCoords = rd.choice(self.m) + rd.choice(self.n)
             # NB : Génération aléatoire sans remise (= regénération si on tombe sur une case déjà remplie) :
             while self.getValue(fillerCoords) != " ":
-                fillerCoords = self.m[rd.randint(0,8)] + self.n[rd.randint(0,8)]
+                fillerCoords = rd.choice(self.m) + rd.choice(self.n)
             # Randomisation de la valeur en elle-même :
-            fillerValue = str(rd.randint(1,9))
+            fillerValue = rd.choice(self.n)
             # Garantie de validité de la grille initialement randomisée (= regénération si l'association coordonnées/valeur est interdite par les règles du sudoku) :
             while not self.isFillerValid(fillerCoords, fillerValue):
-                fillerCoords = self.m[rd.randint(0,8)] + self.n[rd.randint(0,8)]
+                fillerCoords = rd.choice(self.m) + rd.choice(self.n)
                 while self.getValue(fillerCoords) != " ":
-                    fillerCoords = self.m[rd.randint(0,8)] + self.n[rd.randint(0,8)]
-                fillerValue = str(rd.randint(1,9))
+                    fillerCoords = rd.choice(self.m) + rd.choice(self.n)
+                fillerValue = rd.choice(self.n)
             self.setValue(fillerCoords, fillerValue)
         print(f"\n({fillersAmount} valeurs préremplies)")
 
@@ -98,7 +98,4 @@ class SudokuGrid:
 
 
 newGame = SudokuGrid()
-# newGame.setValue("F4", "9")
-# newGame.setValue("F8", "4")
-# newGame.setValue("G5", "3")
 print(newGame)
