@@ -1,17 +1,19 @@
 import random as rd
 from itertools import product
+from copy import deepcopy
 
 class SudokuGrid:
     m = ("A","B","C","D","E","F","G","H","I")
     n = ("1","2","3","4","5","6","7","8","9")
     allCoords = list(product(m, n))
 
-    def __init__(self):
+    def __init__(self, difficultyLevel):
         # Structure de la grille : [[[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
         #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
         #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]]]
         self.grid = [[[[" " for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
         self.randomGenerate() # Génération aléatoire d'une grille de sudoku remplie et valide
+        self.randomDeletion(difficultyLevel) # Suppression aléatoire de valeurs pour créer une grille jouable
 
     def __str__(self):
         gridDisplay = "\n"
@@ -100,7 +102,7 @@ class SudokuGrid:
         for coords in self.allCoords:
             currentValue = self.getValue(coords)
             if not self.isFillerValid(coords, currentValue):
-                return (False, coords)
+                return False
         return True
 
     def randomGenerate(self):
@@ -112,20 +114,37 @@ class SudokuGrid:
                         self.setValue(coords, randomValue)
                         if self.isGridComplete():
                             return True
-                        else:
-                            if self.randomGenerate():
-                                return True
+                        if self.randomGenerate():
+                            return True
                 break
         self.setValue(coords, "0")
         return False
 
+    def randomDeletion(self, difficulty):
+        if difficulty == "1":
+            deletionsAmount = rd.randint(20,29)
+        elif difficulty == "2":
+            deletionsAmount = rd.randint(30,39)
+        elif difficulty == "3":
+            deletionsAmount = rd.randint(40,49)
+        allCoords = deepcopy(self.allCoords)
+        for _ in range(deletionsAmount):
+            coords = rd.choice(allCoords)
+            allCoords.remove(coords)
+            self.setValue(coords, "0")
 
-game = SudokuGrid()
+
+difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
+while difficultyLevelPlayer not in ("1","2","3"):
+    difficultyLevelPlayer = input("Entrez un niveau de difficulté valide (1, 2 ou 3): ")
+game = SudokuGrid(difficultyLevelPlayer)
 playerAction = ""
 
 while playerAction != "3":
     print(game)
     print("Actions :\n1) Insérer/Remplacer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n")
+    if game.isGridComplete():
+        print("4) Valider votre grille\n")
     playerAction = input("Entrez le numéro de l'action à effectuer : ")
     if playerAction == "1":
         playerCoords = input("À quel emplacement souhaitez-vous insérer un chiffre ? ")
@@ -134,4 +153,13 @@ while playerAction != "3":
     elif playerAction == "2":
         resetConfirmation = input("Votre progression sera perdue. Entrez \"reset\" pour confirmer : ")
         if resetConfirmation == "reset":    
-            game = SudokuGrid()
+            difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
+            while difficultyLevelPlayer not in ("1","2","3"):
+                difficultyLevelPlayer = input("Entrez un niveau de difficulté valide (1, 2 ou 3): ")
+            game = SudokuGrid(difficultyLevelPlayer)
+    elif playerAction == "4":
+        if game.isGridValid():
+            print("\nFélicitations ! Vous êtes parvenu à résoudre la grille !\n")
+            break
+        else:
+            print("\nLa grille n'est pas correcte... Courage, vous pouvez le faire !")
