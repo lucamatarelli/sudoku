@@ -6,6 +6,7 @@ class SudokuGrid:
     m = ("A","B","C","D","E","F","G","H","I")
     n = ("1","2","3","4","5","6","7","8","9")
     allCoords = list(product(m, n))
+    allCoords = ["".join(coords) for coords in allCoords]
 
     def __init__(self, difficultyLevel):
         # Structure de la grille : [[[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
@@ -30,14 +31,14 @@ class SudokuGrid:
         return gridDisplay
 
     def getIndices(self, coords):
-        coords = list(coords)
         if len(coords) != 2:
             print("Erreur : seulement 2 coordonnées à entrer")
             return
-        elif (coords[0] not in self.m) or (coords[1] not in self.n):
+        elif (coords[0].upper() not in self.m) or (coords[1] not in self.n):
             print("Erreur : format des coordonnées non valide")
             return
         else:
+            coords = coords.capitalize()
             # Accès type à une case : SudokuGrid.grid[rangée globale][colonne globale][rangée dans sous-grille][colonne dans sous-grille]
             # coords[0] conditionne globalRow et subgridRow
             indexM = self.m.index(coords[0])
@@ -57,15 +58,16 @@ class SudokuGrid:
             return self.grid[globalRow][globalCol][subgridRow][subgridCol]
 
     def setValue(self, coords, value):
-        if tuple(coords) in self.initialFillers:
-            print("Erreur : vous ne pouvez pas modifier les valeurs initiales de la grille")
-            return
-        elif value not in (self.n + ("0",)):
-            print("Erreur : la valeur à insérer doit être un entier compris entre 1 et 9")
+        if value not in (self.n + ("0",)):
+            print("Erreur : la valeur à insérer doit être un entier compris entre 0 et 9\n(Vous pouvez vider une case en choisissant la valeur 0)")
             return
         else:
             indices = self.getIndices(coords)
             if indices != None:
+                print(coords)
+                if coords.capitalize() in self.initialFillers:
+                    print("Erreur : vous ne pouvez pas modifier les valeurs initiales de la grille")
+                    return
                 globalRow, globalCol, subgridRow, subgridCol = indices
                 if value == "0":
                     self.grid[globalRow][globalCol][subgridRow][subgridCol] = " "
