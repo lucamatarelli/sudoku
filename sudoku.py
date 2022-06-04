@@ -12,8 +12,11 @@ class SudokuGrid:
         #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
         #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]]]
         self.grid = [[[[" " for _ in range(3)] for _ in range(3)] for _ in range(3)] for _ in range(3)]
+        self.initialFillers = []
         self.randomGenerate() # Génération aléatoire d'une grille de sudoku remplie et valide
         self.randomDeletion(difficultyLevel) # Suppression aléatoire de valeurs pour créer une grille jouable
+        self.initialFillers = self.existingFillers() # Attribut contenant la collection de toutes les valeurs initialement remplies par la machine, afin de garantir leur immutabilité
+        
 
     def __str__(self):
         gridDisplay = "\n"
@@ -54,7 +57,10 @@ class SudokuGrid:
             return self.grid[globalRow][globalCol][subgridRow][subgridCol]
 
     def setValue(self, coords, value):
-        if value not in (self.n + ("0",)):
+        if tuple(coords) in self.initialFillers:
+            print("Erreur : vous ne pouvez pas modifier les valeurs initiales de la grille")
+            return
+        elif value not in (self.n + ("0",)):
             print("Erreur : la valeur à insérer doit être un entier compris entre 1 et 9")
             return
         else:
@@ -120,18 +126,25 @@ class SudokuGrid:
         self.setValue(coords, "0")
         return False
 
-    def randomDeletion(self, difficulty):
-        if difficulty == "1":
+    def randomDeletion(self, difficultyLevel):
+        if difficultyLevel == "1":
             deletionsAmount = rd.randint(20,29)
-        elif difficulty == "2":
+        elif difficultyLevel == "2":
             deletionsAmount = rd.randint(30,39)
-        elif difficulty == "3":
+        elif difficultyLevel == "3":
             deletionsAmount = rd.randint(40,49)
         allCoords = deepcopy(self.allCoords)
         for _ in range(deletionsAmount):
-            coords = rd.choice(allCoords)
-            allCoords.remove(coords)
-            self.setValue(coords, "0")
+            delCoords = rd.choice(allCoords)
+            allCoords.remove(delCoords)
+            self.setValue(delCoords, "0")
+
+    def existingFillers(self):
+        fillers = []
+        for coords in self.allCoords:
+            if self.getValue(coords) != " ":
+                fillers.append(coords)
+        return fillers
 
 
 difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
