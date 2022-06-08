@@ -2,6 +2,7 @@ import random as rd
 from itertools import product
 from copy import deepcopy
 
+
 class SudokuGrid:
     m = ("A","B","C","D","E","F","G","H","I")
     n = ("1","2","3","4","5","6","7","8","9")
@@ -18,7 +19,6 @@ class SudokuGrid:
         self.randomDeletion(difficultyLevel) # Suppression aléatoire de valeurs pour créer une grille jouable
         self.initialFillers = self.existingFillers() # Attribut contenant la collection de toutes les valeurs initialement remplies par la machine, afin de garantir leur immutabilité
         
-
     def __str__(self):
         gridDisplay = "\n"
         gridDisplay += "  | 1 2 3 | 4 5 6 | 7 8 9\n" # Axe des colonnes
@@ -64,7 +64,6 @@ class SudokuGrid:
         else:
             indices = self.getIndices(coords)
             if indices != None:
-                print(coords)
                 if coords.capitalize() in self.initialFillers:
                     print("Erreur : vous ne pouvez pas modifier les valeurs initiales de la grille")
                     return
@@ -147,34 +146,3 @@ class SudokuGrid:
             if self.getValue(coords) != " ":
                 fillers.append(coords)
         return fillers
-
-
-difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
-while difficultyLevelPlayer not in ("1","2","3"):
-    difficultyLevelPlayer = input("Entrez un niveau de difficulté valide (1, 2 ou 3): ")
-game = SudokuGrid(difficultyLevelPlayer)
-playerAction = ""
-
-while playerAction != "3":
-    print(game)
-    print("Actions :\n1) Insérer/Remplacer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n")
-    if game.isGridComplete():
-        print("4) Valider votre grille\n")
-    playerAction = input("Entrez le numéro de l'action à effectuer : ")
-    if playerAction == "1":
-        playerCoords = input("À quel emplacement souhaitez-vous insérer un chiffre ? ")
-        playerValue = input("Quel chiffre souhaitez-vous insérer ? ")
-        game.setValue(playerCoords, playerValue)
-    elif playerAction == "2":
-        resetConfirmation = input("Votre progression sera perdue. Entrez \"reset\" pour confirmer : ")
-        if resetConfirmation == "reset":    
-            difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
-            while difficultyLevelPlayer not in ("1","2","3"):
-                difficultyLevelPlayer = input("Entrez un niveau de difficulté valide (1, 2 ou 3): ")
-            game = SudokuGrid(difficultyLevelPlayer)
-    elif playerAction == "4":
-        if game.isGridValid():
-            print("\nFélicitations ! Vous êtes parvenu à résoudre la grille !\n")
-            break
-        else:
-            print("\nLa grille n'est pas correcte... Courage, vous pouvez le faire !")
