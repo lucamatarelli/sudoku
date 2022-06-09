@@ -4,28 +4,61 @@ from copy import deepcopy
 
 
 class SudokuGrid:
+    """
+    Représentation d'une grille de sudoku standard\n
+    Attributs de classe :
+    - ROWS : tuple contenant les valeurs (str) des rangées de la grille ("A" -> "I")
+    - COLS : tuple contenant les valeurs (str) des colonnes de la grille ("1" -> "9")
+    - ALL_COORDS : liste contenant toutes les coordonnées (str) de la grille ("A1" -> "I9")\n
+    Attributs d'instance :
+    - grid : structure de données contenant contenant la grille (liste quadruplement imbriquée)
+    - initial_fillers_coords : liste des coordonnées (str) des valeurs initialement remplies
+    - last_filler_coords : coordonnées (str) de la dernière valeur ajoutée dans la grille\n
+    Méthodes :
+    - game_display : renvoie l'affichage souhaité de certains éléments du jeu dans certaines couleurs sur le terminal.
+    - get_indices : à partir de coordonnées, renvoie un tuple contenant les 4 entiers indexant successivement
+        SudokuGrid.grid pour accéder à l'emplacement correspondant à ces coordonnées.
+    - get_value : renvoie la valeur dans SudokuGrid.grid correspondant à des coordonnées données.
+    - set_value : remplace, dans SudokuGrid.grid, la valeur correspondant à des coordonnées données par une valeur donnée.
+    - is_filler_valid : renvoie la validité d'une valeur donnée à des coordonnées données de la grille, selon les 3 contraintes du sudoku
+        (unicité dans la rangée, dans la colonne et dans la sous-grille).
+    - is_grid_complete : renvoie l'état de complétion de la grille.
+    - is_grid_valid : renvoie la validité globale de la grille.
+    - random_generate : génère aléatoirement et récursivement une grille de sudoku (dans SudokuGrid.grid) complètement remplie et valide.
+    - random_deletion : supprime aléatoirement des valeurs dans SudokuGrid.grid pour produire une grille jouable.
+        Le niveau de difficulté choisi conditionne la quantité de valeurs supprimées.
+    - existing_fillers : renvoie une liste contenant toutes les coordonnées d'emplacements non vides dans la grille.
+    """
+
     ROWS = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
     COLS = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
-    ALL_COORDS = ["".join(coords) for coords in list(product(ROWS, COLS))]
+    ALL_COORDS: list[str] = ["".join(coords) for coords in list(product(ROWS, COLS))]
 
     def __init__(self, difficulty_level: str):
-        # Structure de la grille : [[[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
-        #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
-        #                           [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]]]
-        self.grid = [
+        """
+        Initialise une nouvelle grille de sudoku randomisée.
+        Le niveau de difficulté choisi conditionne la quantité de valeurs initiales.
+        pre: 1 <= difficulty_level <= 3
+        post: une instance de SudokuGrid
+        """
+        # Structure de la grille (exemple avec 0 pour remplisseur fictif):
+        # [
+        #  [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
+        #  [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]],
+        #  [[[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]]]
+        #  ]
+        self.grid: list[list[list[list[str]]]] = [
             [[[" " for _ in range(3)] for _ in range(3)] for _ in range(3)]
             for _ in range(3)
         ]
         self.initial_fillers_coords = []
-        # Génération aléatoire d'une grille de sudoku remplie et valide
         self.random_generate()
-        # Suppression aléatoire de valeurs pour créer une grille jouable
         self.random_deletion(difficulty_level)
-        # Attribut contenant la collection de toutes les valeurs initialement remplies par la machine, afin de garantir leur immutabilité
         self.initial_fillers_coords = self.existing_fillers()
         self.last_filler_coords = ""
 
     def __str__(self):
+        """Renvoie la représentation textuelle affichable de la grille."""
         grid_display = "\n  | 1 2 3 | 4 5 6 | 7 8 9\n"
         for coords in self.ALL_COORDS:
             current_value = self.get_value(coords)
@@ -48,6 +81,7 @@ class SudokuGrid:
         return grid_display
 
     def game_display(self, text: str, mode: str) -> str:
+        """Renvoie l'affichage souhaité de certains éléments du jeu dans certaines couleurs sur le terminal."""
         if mode == "error":
             text_out = f"\033[1;31m{text}\033[0;0m"
         elif mode == "player_filler":
@@ -57,6 +91,12 @@ class SudokuGrid:
         return text_out
 
     def get_indices(self, coords: str) -> (tuple[int, int, int, int] | None):
+        """
+        À partir de coordonnées, Renvoie un tuple contenant les 4 entiers indexant successivement
+        SudokuGrid.grid pour accéder à l'emplacement correspondant à ces coordonnées.
+        pre: "A1" <= coords <= "I9"
+        post: (indice de rangée globale, indice de colonne globale, indice de rangée dans la sous-grille, indice de colonne dans la sous-grille)
+        """
         if len(coords) != 2:
             print(
                 self.game_display("Erreur : seulement 2 coordonnées à entrer", "error")
@@ -82,6 +122,11 @@ class SudokuGrid:
             return (global_row, global_col, subgrid_row, subgrid_col)
 
     def get_value(self, coords: str) -> (str | None):
+        """
+        Renvoie la valeur dans SudokuGrid.grid correspondant à des coordonnées données.
+        pre: "A1" <= coords <= "I9"
+        post: "1" <= valeur <= "9" | " "
+        """
         indices = self.get_indices(coords)
         if indices is not None:
             global_row, global_col, subgrid_row, subgrid_col = indices
@@ -89,6 +134,12 @@ class SudokuGrid:
         return None
 
     def set_value(self, coords: str, value: str) -> None:
+        """
+        Remplace, dans SudokuGrid.grid, la valeur correspondant à des coordonnées données par une valeur donnée.
+        pre: "A1" <= coords <= "I9"
+        pre: "0" <= value <= "9"
+        post: /
+        """
         if value not in (self.COLS + ("0",)):
             print(
                 self.game_display(
@@ -116,6 +167,13 @@ class SudokuGrid:
                     self.last_filler_coords = coords.capitalize()
 
     def is_filler_valid(self, coords: str, value: str) -> (bool | None):
+        """
+        Renvoie la validité d'une valeur donnée à des coordonnées données de la grille,
+        selon les 3 contraintes du sudoku (unicité dans la rangée, dans la colonne et dans la sous-grille).
+        pre: "A1" <= coords <= "I9"
+        pre: "0" <= value <= "9"
+        post: True | False
+        """
         indices = self.get_indices(coords)
         if indices is not None:
             global_row, global_col, subgrid_row, subgrid_col = indices
@@ -149,12 +207,22 @@ class SudokuGrid:
         return None
 
     def is_grid_complete(self) -> bool:
+        """
+        Renvoie l'état de complétion de la grille.
+        pre: /
+        post: True | False
+        """
         for coords in self.ALL_COORDS:
             if self.get_value(coords) == " ":
                 return False
         return True
 
     def is_grid_valid(self) -> bool:
+        """
+        Renvoie la validité globale de la grille.
+        pre: /
+        post: True | False
+        """
         for coords in self.ALL_COORDS:
             current_value = self.get_value(coords)
             if not self.is_filler_valid(coords, current_value):
@@ -162,6 +230,11 @@ class SudokuGrid:
         return True
 
     def random_generate(self) -> bool:
+        """
+        Génère aléatoirement et récursivement une grille de sudoku (dans SudokuGrid.grid) complètement remplie et valide.
+        pre: /
+        post: True | False
+        """
         for coords in self.ALL_COORDS:
             if self.get_value(coords) == " ":
                 possible_values = rd.sample(self.COLS, 9)
@@ -177,6 +250,12 @@ class SudokuGrid:
         return False
 
     def random_deletion(self, difficulty_level: str) -> None:
+        """
+        Supprime aléatoirement des valeurs dans SudokuGrid.grid pour produire une grille jouable.
+        Le niveau de difficulté choisi conditionne la quantité de valeurs supprimées.
+        pre: "1" <= difficulty_level <= "3"
+        post: /
+        """
         if difficulty_level == "1":
             deletions_amount = rd.randint(20, 29)
         elif difficulty_level == "2":
@@ -190,6 +269,11 @@ class SudokuGrid:
             self.set_value(del_coords, "0")
 
     def existing_fillers(self) -> list[str]:
+        """
+        Renvoie une liste contenant toutes les coordonnées d'emplacements non vides dans la grille.
+        pre: /
+        post: liste de coordonnées ("A1" -> "I9")
+        """
         fillers_coords = []
         for coords in self.ALL_COORDS:
             if self.get_value(coords) != " ":
