@@ -14,7 +14,10 @@ def main():
     while player_action != "3":
         print(game)
         print(
-            "Actions :\n1) Insérer/Remplacer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n"
+            "\033[1;33m[Dernière valeur insérée]\033[0;0m\n\033[1;36m[Précédentes valeurs insérées]\033[0;0m\n"
+        )
+        print(
+            "Actions :\n1) Insérer/Remplacer/Supprimer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n"
         )
         if game.is_grid_complete():
             print("4) Valider votre grille\n")
@@ -23,7 +26,9 @@ def main():
             player_coords = input(
                 "À quel emplacement souhaitez-vous insérer un chiffre ? "
             )
-            player_value = input("Quel chiffre souhaitez-vous insérer ? ")
+            player_value = input(
+                "Quel chiffre souhaitez-vous insérer (NB : 0 pour vider une case) ? "
+            )
             game.set_value(player_coords, player_value)
         elif player_action == "2":
             reset_confirmation = input(
