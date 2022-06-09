@@ -18,24 +18,43 @@ class SudokuGrid:
         self.randomGenerate() # Génération aléatoire d'une grille de sudoku remplie et valide
         self.randomDeletion(difficultyLevel) # Suppression aléatoire de valeurs pour créer une grille jouable
         self.initialFillers = self.existingFillers() # Attribut contenant la collection de toutes les valeurs initialement remplies par la machine, afin de garantir leur immutabilité
+        self.last_filler_coords = ""
         
     def __str__(self):
-        gridDisplay = "\n"
-        gridDisplay += "  | 1 2 3 | 4 5 6 | 7 8 9\n" # Axe des colonnes
-        for i, gridRow in enumerate(self.grid):
-            gridRowDisplay = ""
-            for j in range(3):
-                gridRowDisplay += self.m[(i*3)+j] + " | " + str(gridRow[0][j]) + " | " + str(gridRow[1][j]) + " | " + str(gridRow[2][j]) + "\n" # Axe des rangées et contenu
-            gridDisplay += 25 * "-" + "\n" + str(gridRowDisplay)
-        gridDisplay = gridDisplay.replace("[","").replace("]","").replace(",","").replace("'","") # Nettoyage final
+        gridDisplay = "\n  | 1 2 3 | 4 5 6 | 7 8 9\n"
+        for coords in self.allCoords:
+            currValue = self.getValue(coords)
+            if coords[1] == "1":
+                if coords[0] == "A" or coords[0] == "D" or coords[0] == "G":
+                    gridDisplay += 25 * "-" + "\n"
+                gridDisplay += coords[0] + " |"
+            elif coords[1] == "4" or coords[1] == "7":
+                gridDisplay += " |"
+            if coords in self.initialFillers:
+                gridDisplay += " " + currValue
+            elif coords == self.last_filler_coords:
+                gridDisplay += " " + self.game_display(currValue, "player_last_filler")
+            else:
+                gridDisplay += " " + self.game_display(currValue, "player_filler")
+            if coords[1] == "9":
+                gridDisplay += "\n"
         return gridDisplay
+
+    def game_display(self, text, mode):
+        if mode == "error":
+            text_out = f"\033[1;31m{text}\033[0;0m"
+        elif mode == "player_filler":
+            text_out = f"\033[1;36m{text}\033[0;0m"
+        elif mode == "player_last_filler":
+            text_out = f"\033[1;33m{text}\033[0;0m"
+        return text_out
 
     def getIndices(self, coords):
         if len(coords) != 2:
-            print("Erreur : seulement 2 coordonnées à entrer")
+            print(self.game_display("Erreur : seulement 2 coordonnées à entrer", "error"))
             return
         elif (coords[0].upper() not in self.m) or (coords[1] not in self.n):
-            print("Erreur : format des coordonnées non valide")
+            print(self.game_display("Erreur : format des coordonnées non valide", "error"))
             return
         else:
             coords = coords.capitalize()
@@ -59,45 +78,42 @@ class SudokuGrid:
 
     def setValue(self, coords, value):
         if value not in (self.n + ("0",)):
-            print("Erreur : la valeur à insérer doit être un entier compris entre 0 et 9\n(Vous pouvez vider une case en choisissant la valeur 0)")
+            print(self.game_display("Erreur : la valeur à insérer doit être un entier compris entre 0 et 9\n(Vous pouvez vider une case en choisissant la valeur 0)", "error"))
             return
         else:
             indices = self.getIndices(coords)
             if indices != None:
                 if coords.capitalize() in self.initialFillers:
-                    print("Erreur : vous ne pouvez pas modifier les valeurs initiales de la grille")
+                    print(self.game_display("Erreur : vous ne pouvez pas modifier les valeurs initiales de la grille", "error"))
                     return
                 globalRow, globalCol, subgridRow, subgridCol = indices
                 if value == "0":
                     self.grid[globalRow][globalCol][subgridRow][subgridCol] = " "
                 else:
                     self.grid[globalRow][globalCol][subgridRow][subgridCol] = value
+                    self.last_filler_coords = coords.capitalize()
 
     def isFillerValid(self, coords, value):
-        if value not in self.n:
-            print("Erreur : la valeur à insérer doit être un entier compris entre 1 et 9")
-            return
-        else:
-            indices = self.getIndices(coords)
-            if indices != None:
-                globalRow, globalCol, subgridRow, subgridCol = indices
+        indices = self.getIndices(coords)
+        if indices != None:
+            globalRow, globalCol, subgridRow, subgridCol = indices
 
-                fillerRow = sum([self.grid[globalRow][i][subgridRow] for i in range(3)], [])
-                valueindexRow = self.n.index(coords[1])
-                del fillerRow[valueindexRow]
+            fillerRow = sum([self.grid[globalRow][i][subgridRow] for i in range(3)], [])
+            valueindexRow = self.n.index(coords[1])
+            del fillerRow[valueindexRow]
 
-                fillerCol = [self.grid[i][globalCol][j][subgridCol] for i in range(3) for j in range(3)]
-                valueindexCol = self.m.index(coords[0])
-                del fillerCol[valueindexCol]
+            fillerCol = [self.grid[i][globalCol][j][subgridCol] for i in range(3) for j in range(3)]
+            valueindexCol = self.m.index(coords[0])
+            del fillerCol[valueindexCol]
 
-                fillerSubgrid = sum(self.grid[globalRow][globalCol], [])
-                valueIndexSubgrid = (valueindexCol % 3) * 3 + (valueindexRow % 3)
-                del fillerSubgrid[valueIndexSubgrid]
+            fillerSubgrid = sum(self.grid[globalRow][globalCol], [])
+            valueIndexSubgrid = (valueindexCol % 3) * 3 + (valueindexRow % 3)
+            del fillerSubgrid[valueIndexSubgrid]
 
-                if (value in fillerRow) or (value in fillerCol) or (value in fillerSubgrid):
-                    return False
-                else:
-                    return True
+            if (value in fillerRow) or (value in fillerCol) or (value in fillerSubgrid):
+                return False
+            else:
+                return True
 
     def isGridComplete(self):
         for coords in self.allCoords:

@@ -28,10 +28,10 @@ def main():
             if not game.isGridComplete():
                 continue
             elif game.isGridValid():
-                print("\nFélicitations ! Vous êtes parvenu à résoudre la grille !\n")
+                print("\n\033[3;32mFélicitations ! Vous êtes parvenu à résoudre la grille !\033[0;0m\n")
                 break
             else:
-                print("\nLa grille n'est pas correcte... Courage, vous pouvez le faire !")
+                print("\n\033[3;31mLa grille n'est pas correcte... Courage, vous pouvez le faire !\033[0;0m")
 
 
 if __name__ == "__main__":
