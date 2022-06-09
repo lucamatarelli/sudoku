@@ -2,36 +2,54 @@ from sudokugrid import SudokuGrid
 
 
 def main():
-    difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
-    while difficultyLevelPlayer not in ("1","2","3"):
-        difficultyLevelPlayer = input("Entrez un niveau de difficulté valide (1, 2 ou 3): ")
-    game = SudokuGrid(difficultyLevelPlayer)
-    playerAction = ""
-    while playerAction != "3":
+    player_difficulty_level = input(
+        "\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : "
+    )
+    while player_difficulty_level not in ("1", "2", "3"):
+        player_difficulty_level = input(
+            "Entrez un niveau de difficulté valide (1, 2 ou 3): "
+        )
+    game = SudokuGrid(player_difficulty_level)
+    player_action = ""
+    while player_action != "3":
         print(game)
-        print("Actions :\n1) Insérer/Remplacer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n")
-        if game.isGridComplete():
+        print(
+            "Actions :\n1) Insérer/Remplacer un chiffre dans la grille\n2) Réinitialiser la grille\n3) Quitter le jeu\n"
+        )
+        if game.is_grid_complete():
             print("4) Valider votre grille\n")
-        playerAction = input("Entrez le numéro de l'action à effectuer : ")
-        if playerAction == "1":
-            playerCoords = input("À quel emplacement souhaitez-vous insérer un chiffre ? ")
-            playerValue = input("Quel chiffre souhaitez-vous insérer ? ")
-            game.setValue(playerCoords, playerValue)
-        elif playerAction == "2":
-            resetConfirmation = input("Votre progression sera perdue. Entrez \"reset\" pour confirmer : ")
-            if resetConfirmation == "reset":    
-                difficultyLevelPlayer = input("\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : ")
-                while difficultyLevelPlayer not in ("1","2","3"):
-                    difficultyLevelPlayer = input("Entrez un niveau de difficulté valide (1, 2 ou 3): ")
-                game = SudokuGrid(difficultyLevelPlayer)
-        elif playerAction == "4":
-            if not game.isGridComplete():
+        player_action = input("Entrez le numéro de l'action à effectuer : ")
+        if player_action == "1":
+            player_coords = input(
+                "À quel emplacement souhaitez-vous insérer un chiffre ? "
+            )
+            player_value = input("Quel chiffre souhaitez-vous insérer ? ")
+            game.set_value(player_coords, player_value)
+        elif player_action == "2":
+            reset_confirmation = input(
+                'Votre progression sera perdue. Entrez "reset" pour confirmer : '
+            )
+            if reset_confirmation == "reset":
+                player_difficulty_level = input(
+                    "\nChoisissez un niveau de difficulté (1 = Facile, 2 = Moyen, 3 = Difficile) : "
+                )
+                while player_difficulty_level not in ("1", "2", "3"):
+                    player_difficulty_level = input(
+                        "Entrez un niveau de difficulté valide (1, 2 ou 3): "
+                    )
+                game = SudokuGrid(player_difficulty_level)
+        elif player_action == "4":
+            if not game.is_grid_complete():
                 continue
-            elif game.isGridValid():
-                print("\n\033[3;32mFélicitations ! Vous êtes parvenu à résoudre la grille !\033[0;0m\n")
+            elif game.is_grid_valid():
+                print(
+                    "\n\033[3;32mFélicitations ! Vous êtes parvenu à résoudre la grille !\033[0;0m\n"
+                )
                 break
             else:
-                print("\n\033[3;31mLa grille n'est pas correcte... Courage, vous pouvez le faire !\033[0;0m")
+                print(
+                    "\n\033[3;31mLa grille n'est pas correcte... Courage, vous pouvez le faire !\033[0;0m"
+                )
 
 
 if __name__ == "__main__":
